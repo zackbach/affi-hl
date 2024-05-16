@@ -1,6 +1,5 @@
-From stdpp Require Export binders strings.
-From stdpp Require Import gmap.
-From iris.heap_lang Require Import notation lang.
+From stdpp Require Export binders strings gmap.
+From iris.heap_lang Require Export notation lang.
 
 Inductive aexpr :=
   | Unit
@@ -15,23 +14,23 @@ Inductive aexpr :=
 
 Inductive ty :=
   | One
-  | Unq (τ : ty)
-  | Fun (τ1 τ2 : ty)
   | Tensor (τ1 τ2 : ty)
+  | Fun (τ1 τ2 : ty)
+  | Unq (τ : ty)
 .
 
 (* TODO: maybe add printing notation for types *)
 
 Definition ctx := gmap string ty.
 
-(* I literally just copied this one *)
+(* I literally just copied this from random STLC notation thing *)
 Reserved Notation "Γ ⊢ a : τ '~~>' e" (at level 74, a, τ, e at next level).
 
 (* NOTE: I fear that overriding with ∪ for merging contexts is actually bad *)
 
 Inductive compile : ctx → aexpr → ty → expr → Prop :=
   | CUnit Γ :
-      Γ ⊢ Unit : One ~~> "()"
+      Γ ⊢ Unit : One ~~> #()
   | CVar Γ x τ :
     Γ !! x = Some τ →
       Γ ⊢ (Var x) : τ ~~> x
