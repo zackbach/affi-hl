@@ -5,4 +5,4 @@
 # (https://github.com/coq/coq/issues/6294).
 -arg -w -arg -redundant-canonical-projection
 
-theories/foo.v
+theories/source.v
