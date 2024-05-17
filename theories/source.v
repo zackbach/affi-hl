@@ -1,5 +1,5 @@
-From stdpp Require Export binders strings gmap.
-From iris.heap_lang Require Export notation lang.
+From stdpp Require Import binders strings gmap.
+From iris.heap_lang Require Import notation lang.
 
 Inductive aexpr :=
   | Unit
@@ -18,8 +18,6 @@ Inductive ty :=
   | Fun (τ1 τ2 : ty)
   | Unq (τ : ty)
 .
-
-(* TODO: maybe add printing notation for types *)
 
 Definition ctx := gmap string ty.
 
