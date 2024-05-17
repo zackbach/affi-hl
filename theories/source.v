@@ -33,7 +33,7 @@ Inductive compile : ctx → aexpr → ty → expr → Prop :=
     Γ !! x = Some τ →
       Γ ⊢ (Var x) : τ ~~> x
   | CLam Γ x a τ1 τ2 e :
-    (<[ x := τ1 ]> Γ) ⊢ a : τ1 ~~> e →
+    (<[ x := τ1 ]> Γ) ⊢ a : τ2 ~~> e →
       Γ ⊢ (Lam (BNamed x) a) : (Fun τ1 τ2) ~~> λ: x, e
   | CApp Γ1 Γ2 a1 a2 τ1 τ2 e1 e2 :
     Γ1 ⊢ a1 : (Fun τ1 τ2) ~~> e1 →

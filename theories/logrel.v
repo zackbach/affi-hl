@@ -14,9 +14,10 @@ Notation VR := (val -> iProp Σ).
 
 (* We supply the value relation that must hold of the result,
    instead of being parameterized by the type like normal *)
-Program Definition expr_interp (V : VR) : ER :=
+Definition expr_interp (V : VR) : ER :=
   (λ e, WP e {{ V }})%I.
 Notation ℰ := expr_interp.
+
 
 Definition unit_interp : VR := 
   (λ v, ⌜v = #()⌝)%I.
@@ -40,10 +41,14 @@ Fixpoint type_interp (A : ty) : VR :=
 (* I copied the levels over from examples stlc logrel *)
 Notation "𝒱⟦ τ ⟧" := (type_interp τ) (at level 0, τ at level 70).
 
+
 (* I don't fully understand this [* map] concrete syntax *)
-Program Definition context_interp (Γ : gmap string ty) γ : iProp Σ :=
+Definition context_interp (Γ : gmap string ty) γ : iProp Σ :=
   ([∗ map] x ↦ A; v ∈ Γ; γ, 𝒱⟦ A ⟧ v)%I.
 Notation "𝒢⟦ Γ ⟧" := (context_interp Γ) (at level 0, Γ at level 70).
+
+(* copied from other developments, IDK why *)
+Global Opaque context_interp.
 
 Definition sem_typed Γ e τ : Prop :=
   ⊢ ∀ γ, 𝒢⟦ Γ ⟧ γ -∗ ℰ (𝒱⟦ τ ⟧) (subst_map γ e).
