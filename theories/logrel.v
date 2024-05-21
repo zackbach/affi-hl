@@ -1,7 +1,5 @@
 From affi Require Import source.
 From iris.program_logic Require Import weakestpre.
-From iris.proofmode Require Import proofmode tactics.
-From iris.heap_lang Require Import proofmode.
 From iris.heap_lang Require Import primitive_laws metatheory.
 From iris.heap_lang Require Import lang notation.
 From iris.prelude Require Import options.
@@ -42,53 +40,16 @@ Fixpoint type_interp (τ : ty) : VR :=
 Notation "𝒱⟦ τ ⟧" := (type_interp τ) (at level 0, τ at level 70).
 
 
-(* I don't fully understand this [* map] concrete syntax *)
-Definition context_interp (Γ : gmap string ty) γ : iProp Σ :=
-  ([∗ map] x ↦ τ; v ∈ Γ; γ, 𝒱⟦ τ ⟧ v)%I.
-Notation "𝒢⟦ Γ ⟧" := (context_interp Γ) (at level 0, Γ at level 70).
+Definition ctx_interp (Γ : ctx) (γ : gmap string val) : iProp Σ :=
+  (* Session types paper had binders, not strings, in their map
+     and when they added, they turned pre-existing name to BAnon *)
+  ([∗ list] p ∈ Γ, ∃ v, ⌜γ !! (ctx_item_name p) = Some v⌝
+                         ∗ 𝒱⟦ (ctx_item_type p) ⟧ v)%I.
+Notation "𝒢⟦ Γ ⟧" := (ctx_interp Γ) (at level 0, Γ at level 70).
 
 (* copied from other developments, IDK why *)
-Global Opaque context_interp.
+Global Opaque ctx_interp.
 
 Definition sem_typed Γ e τ : Prop :=
   ⊢ ∀ γ, 𝒢⟦ Γ ⟧ γ -∗ ℰ (𝒱⟦ τ ⟧) (subst_map γ e).
 Notation "Γ ⊨ e : τ" := (sem_typed Γ e τ) (at level 74, e, τ at next level).
-
-
-(* Taken from Semantics notes *)
-Lemma context_interp_insert Γ γ τ v x :
-  𝒱⟦ τ ⟧ v -∗
-  𝒢⟦ Γ ⟧ γ -∗
-  𝒢⟦ (<[ x := τ ]> Γ) ⟧ (<[ x := v ]> γ).
-Proof.
-  iIntros "Hv Hγ". iApply (big_sepM2_insert_2 with "[Hv] [Hγ]"); done.
-Qed.
-
-Lemma context_interp_lookup Γ γ τ x :
-  ⌜Γ !! x = Some τ⌝ -∗
-  𝒢⟦ Γ ⟧ γ -∗
-  ∃ v, ⌜γ !! x = Some v⌝ ∧ 𝒱⟦ τ ⟧ v.
-Proof.
-  iIntros (Hlook) "Hγ".
-  iPoseProof (big_sepM2_lookup_l with "Hγ") as "Hτ"; done.
-Qed.
-
-(* This totally doesn't hold of my current definition *)
-Lemma this_should_hold Γ1 Γ2 γ :
-  𝒢⟦ Γ1 ∪ Γ2 ⟧ γ ⊣⊢ 𝒢⟦ Γ1 ⟧ γ ∗ 𝒢⟦ Γ2 ⟧ γ.
-Proof.
-  Admitted.
-
-
-(* REDEFINITION IDEAS:
-- I really only need ⊢ direction to hold for `this_should_hold`,
-  but the bigsep list ++ stuff should give me enough for both.
-- I can try to work back wards from `context_interp_lookup`
-- Idea: still have `γ : gmap` but have `Γ` as a list of pairs:
-  - For every pair (x, τ) in Γ, we need 𝒱⟦ τ ⟧ γ(x)
-- Would require new `lookup` in `Γ` now, prob just like `!!`
-- Problem: this makes adding to the context bad, 
-  since we don't delete old one
-  - We would have to have something like C-cons
-  - Maybe just quantify over fresh names in the compile relation
-*)

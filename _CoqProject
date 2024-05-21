@@ -7,4 +7,5 @@
 
 theories/source.v
 theories/logrel.v
+theories/helpers.v
 theories/fundamental.v
