@@ -91,31 +91,38 @@ Proof.
   wp_alloc l as "Hl"; iModIntro. eauto with iFrame.
 Qed.
 
-Lemma compat_swap Γ1 Γ2 e1 e2 τ1 τ2 :
+Lemma compat_swap Γ1 Γ2 e1 e2 τ1 τ2 (ltemp rtemp : string) :
+  Γ2 !! ltemp = None → Γ2 !! rtemp = None →
+  ltemp ≠ rtemp →
   Γ1 ⊨ e1 : Unq τ1 →
   Γ2 ⊨ e2 : τ2 →
-  Γ1 ++ Γ2 ⊨ (let: "l" := e1 in 
-              let: "r" := ! "l" in 
-              let: "_" := "l" <- e2 in 
-                ("l", "r")) : Tensor (Unq τ2) τ1.
+  Γ1 ++ Γ2 ⊨ (let: ltemp := e1 in 
+              let: rtemp := ! ltemp in 
+              let: BAnon := ltemp <- e2 in 
+                (ltemp, rtemp)) : Tensor (Unq τ2) τ1.
 Proof.
-  iIntros (He1 He2 γ) "Hg/="; rewrite /expr_interp.
+  iIntros (Hlt Hrt Hneq He1 He2 γ) "Hg/="; rewrite /expr_interp.
+  (* Some of the later decision obligations use inequality of binders *)
+  assert (BNamed ltemp ≠ BNamed rtemp).
+  { apply binder_name_neq; done. }
   iDestruct (ctx_interp_split with "Hg") as "[Hg1 Hg2]".
   smart_wp_bind (subst_map γ e1) "[Hg1]" l "[%loc [%v1 (-> & Hpt & Hv1)]]" He1.
-  rewrite lookup_delete. wp_pures. wp_load. wp_pures.
-  (* Surely there is a better way to do this *)
-  rewrite lookup_delete_ne; auto.
+  repeat rewrite lookup_delete. wp_pures.
+  (* This became necessary when swapping from "l" and "r" to ltemp and rtemp
+     since the decision stuff did not happen automatically.
+     just using rewrite was rewriting one-by-one *)
+  setoid_rewrite decide_True; auto.
+  wp_load. wp_pures.
+  (* Surely there is a better way to do this.
+     To do this at any scale, much better automation would be needed
+     / better reasoning about substitutions *)
   rewrite lookup_delete_ne; auto.
   rewrite lookup_delete. simpl.
-  rewrite -subst_map_insert2; auto.
+  rewrite decide_True; auto.
+  rewrite -subst_map_insert2; auto. simpl.
   wp_bind (Store _ _). wp_bind (subst_map _ _).
-  (* Problem: we need 
-    𝒢⟦ Γ2 ⟧ (<["l":=#loc]> (<["r":=v1]> γ)) in order to apply
-    He2 to the term.
-    technically this means we can't have l or r appear free in e2
-    the way to enforce that is probably just to require that
-    l and r are not in Γ2, then the proof should fall out
-    I guess I should just update my compilation relation *)
+  (* RESUME HERE *)
+  iPoseProof (ctx_subst_insert $! Hrt with "Hg2") as "Hγx".
 
   
   Admitted.
@@ -128,4 +135,4 @@ Lemma fundamental Γ a τ e :
   Γ ⊨ e : τ.
 Proof.
   induction 1; eauto.
-Qed.
+  Admitted.

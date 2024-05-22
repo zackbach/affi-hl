@@ -21,9 +21,13 @@ Section lang.
   .
 End lang.
 
-(* Mostly from DFSL paper. They store names as `binding`s
-   and use an anonymization when they cons on, but for now
-   we instead have a requirement for names being fresh *)
+(* Mostly from DFSL paper. They store names as `binding`s and use an
+   anonymization when they cons on, but for now we instead have a requirement
+   for names being fresh *)
+(* I think that the anonymization thing with `BAnon` would work mostly, but I
+   couldn't figure out a good way to get temp names to work without already
+   quantifying + freshness constraint. At that point, why not do it all like
+   that? Maybe restrictions about closedness could suffice, but annoying *)
 Section context.
   Inductive ctx_item := CtxItem {
     ctx_item_name : string;
@@ -52,6 +56,9 @@ Section compile.
       Γ !! x = Some τ →
         Γ ⊢ (Var x) : τ ~~> x
     | CLam Γ x a τ1 τ2 e :
+      (* Requires freshness of `x`, which makes context things easier
+         As noted above, could have consing onto Γ anonymize instead *)
+      Γ !! x = None →
       (CtxItem x τ1 :: Γ) ⊢ a : τ2 ~~> e →
         Γ ⊢ (Lam (BNamed x) a) : (Fun τ1 τ2) ~~> λ: x, e
     | CApp Γ1 Γ2 a1 a2 τ1 τ2 e1 e2 :
@@ -72,13 +79,15 @@ Section compile.
     | CNew Γ a τ e :
       Γ ⊢ a : τ ~~> e →
         Γ ⊢ (New a) : (Unq τ) ~~> ref e
-    | CSwap Γ1 Γ2 a1 a2 τ1 τ2 e1 e2 :
+    | CSwap Γ1 Γ2 a1 a2 τ1 τ2 e1 e2 (ltemp rtemp : string) :
+      (* requirement that ltemp and rtemp fresh *)
+      Γ2 !! ltemp = None → Γ2 !! rtemp = None →
       Γ1 ⊢ a1 : (Unq τ1) ~~> e1 →
       Γ2 ⊢ a2 : τ2 ~~> e2 →
         (Γ1 ++ Γ2) ⊢ (Swap a1 a2) : (Tensor (Unq τ2) τ1) ~~>
-          let: "l" := e1 in
-          let: "r" := !"l" in
-          let: "_" := "l" <- e2 in ("l", "r")
+          let: ltemp := e1 in
+          let: rtemp := !ltemp in
+          let: "_" := ltemp <- e2 in (ltemp, rtemp)
   where "Γ ⊢ a : τ '~~>' e" := (compile Γ a τ e).
 End compile.
 

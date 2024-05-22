@@ -47,7 +47,7 @@ Definition ctx_interp (Γ : ctx) (γ : gmap string val) : iProp Σ :=
                          ∗ 𝒱⟦ (ctx_item_type p) ⟧ v)%I.
 Notation "𝒢⟦ Γ ⟧" := (ctx_interp Γ) (at level 0, Γ at level 70).
 
-(* copied from other developments, IDK why *)
+(* copied from other developments, to prevent unfolding *)
 Global Opaque ctx_interp.
 
 Definition sem_typed Γ e τ : Prop :=

@@ -34,6 +34,12 @@ Proof.
   rewrite -subst_map_insert; auto.
 Qed.
 
+Lemma binder_name_neq a b :
+  a ≠ b ↔ (BNamed a) ≠ (BNamed b).
+Proof.
+  split; intros H1 H2; [inversion H2 | subst]; contradiction.
+Qed.
+
 
 (* Mostly inspired from Semantics notes *)
 Section context_lemmas.
@@ -43,6 +49,12 @@ Section context_lemmas.
     (* By induction on Γ, using ctx_lookup definition
         Admitted for now because this is clearly true but annoying *)
     Admitted.
+
+  Lemma ctx_lookup_notin (Γ : ctx) x τ : 
+    Γ !! x = None ↔ CtxItem x τ ∉ Γ.
+  Proof.
+    Admitted.
+
 
   Lemma ctx_interp_split Γ1 Γ2 γ :
     𝒢⟦ Γ1 ++ Γ2 ⟧ γ ⊣⊢ 𝒢⟦ Γ1 ⟧ γ ∗ 𝒢⟦ Γ2 ⟧ γ.
@@ -60,15 +72,26 @@ Section context_lemmas.
     iPoseProof (big_sepL_elem_of _ Γ _ with "Hγ") as "HΦ"; done.
   Qed.
 
-  (* TODO: come back and prove this, in the case where x is not in Γ
-  (Also prove the thing from the Swap compat lemma, where we add to γ only)
+  Lemma ctx_subst_insert Γ γ v x :
+    ⌜Γ !! x = None⌝ -∗
+    𝒢⟦ Γ ⟧ γ -∗
+    𝒢⟦ Γ ⟧ (<[ x := v ]> γ).
+  Proof.
+    Admitted.
 
   Lemma ctx_interp_insert Γ γ τ v x :
+    ⌜Γ !! x = None⌝ -∗
     𝒱⟦ τ ⟧ v -∗
     𝒢⟦ Γ ⟧ γ -∗
-    𝒢⟦ (<[ x := τ ]> Γ) ⟧ (<[ x := v ]> γ).
+    𝒢⟦ CtxItem x τ :: Γ ⟧ (<[ x := v ]> γ).
   Proof.
-    iIntros "Hv Hγ". iApply (big_sepM2_insert_2 with "[Hv] [Hγ]"); done.
+    iIntros (Hnone) "Hv Hγ".
+    (* Unable to apply big_sepL_cons without marking as transparent.
+       Note that other developments and proofs above don't have this problem
+       not sure why there's only a problem here... *)
+    Transparent ctx_interp. iApply big_sepL_cons; simpl.
+    iSplitL "Hv".
+    - iExists v. rewrite lookup_insert; auto.
+    - iPoseProof (ctx_subst_insert $! Hnone with "Hγ") as "Hγx"; done.
   Qed.
-  *)
 End context_lemmas.
