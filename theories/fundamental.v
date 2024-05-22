@@ -92,8 +92,7 @@ Proof.
 Qed.
 
 Lemma compat_swap Γ1 Γ2 e1 e2 τ1 τ2 (ltemp rtemp : string) :
-  Γ2 !! ltemp = None → Γ2 !! rtemp = None →
-  ltemp ≠ rtemp →
+  Γ2 !! ltemp = None → Γ2 !! rtemp = None → ltemp ≠ rtemp →
   Γ1 ⊨ e1 : Unq τ1 →
   Γ2 ⊨ e2 : τ2 →
   Γ1 ++ Γ2 ⊨ (let: ltemp := e1 in 
@@ -113,9 +112,8 @@ Proof.
      just using rewrite was rewriting one-by-one *)
   setoid_rewrite decide_True; auto.
   wp_load. wp_pures.
-  (* Surely there is a better way to do this.
-     To do this at any scale, much better automation would be needed
-     / better reasoning about substitutions *)
+  (* Surely there is a better way to do this. To do this at any scale,
+   much better automation / substitution reasoning would be needed *)
   rewrite lookup_delete_ne; auto.
   rewrite lookup_delete. simpl.
   rewrite decide_True; auto.

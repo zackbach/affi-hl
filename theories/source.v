@@ -81,7 +81,7 @@ Section compile.
         Γ ⊢ (New a) : (Unq τ) ~~> ref e
     | CSwap Γ1 Γ2 a1 a2 τ1 τ2 e1 e2 (ltemp rtemp : string) :
       (* requirement that ltemp and rtemp fresh *)
-      Γ2 !! ltemp = None → Γ2 !! rtemp = None →
+      Γ2 !! ltemp = None → Γ2 !! rtemp = None → ltemp ≠ rtemp →
       Γ1 ⊢ a1 : (Unq τ1) ~~> e1 →
       Γ2 ⊢ a2 : τ2 ~~> e2 →
         (Γ1 ++ Γ2) ⊢ (Swap a1 a2) : (Tensor (Unq τ2) τ1) ~~>
