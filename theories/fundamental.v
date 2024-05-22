@@ -85,9 +85,9 @@ Proof.
      which hopefully will be less painful later *)
   rewrite lookup_delete_ne; auto. rewrite lookup_delete /expr_interp.
   (* This totally shouldn't be necessary, but appears to be for decide *)
-  assert (BNamed tmp ≠ BNamed x1) as Hneq1'. { apply binder_name_neq; done. }
-  assert (BNamed tmp ≠ BNamed x2) as Hneq2'. { apply binder_name_neq; done. }
-  assert (BNamed x1 ≠ BNamed x2) as Hneq'. { apply binder_name_neq; done. }
+  assert (BNamed tmp ≠ BNamed x1) as Hneq1' by (by apply binder_name_neq).
+  assert (BNamed tmp ≠ BNamed x2) as Hneq2' by (by apply binder_name_neq).
+  assert (BNamed x1 ≠ BNamed x2) as Hneq' by (by apply binder_name_neq).
   iDestruct (ctx_interp_split with "Hg") as "[Hg1 Hg2]".
   smart_wp_bind (subst_map _ e1) "[Hg1]" v "[%v1 [%v2 (-> & Hv1 & Hv2)]]" He1.
   wp_pures; rewrite !decide_True; auto.
@@ -95,8 +95,7 @@ Proof.
   rewrite -subst_map_insert3; auto.
   (* TODO: golf this *)
   iPoseProof (ctx_interp_insert $! Hx2 with "Hv2 Hg2") as "Hγ2".
-  assert ((CtxItem x2 τ2 :: Γ2) !! x1 = None) as Hnone1.
-  { apply ctx_add_notin; done. }
+  assert ((CtxItem x2 τ2 :: Γ2) !! x1 = None) as Hnone1 by (by apply ctx_add_notin).
   iPoseProof (ctx_interp_insert $! Hnone1 with "Hv1 Hγ2") as "Hγ1".
   assert ((CtxItem x1 τ1 :: (CtxItem x2 τ2 :: Γ2)) !! tmp = None) as Hnone2.
   { repeat apply ctx_add_notin; auto. }
@@ -124,7 +123,7 @@ Lemma compat_swap Γ1 Γ2 e1 e2 τ1 τ2 (ltemp rtemp : string) :
 Proof.
   iIntros (Hlt Hrt Hneq He1 He2 γ) "Hg/="; rewrite /expr_interp.
   (* Some of the later decision obligations use inequality of binders *)
-  assert (BNamed ltemp ≠ BNamed rtemp). { apply binder_name_neq; done. }
+  assert (BNamed ltemp ≠ BNamed rtemp) as Hneq' by (by apply binder_name_neq).
   iDestruct (ctx_interp_split with "Hg") as "[Hg1 Hg2]".
   smart_wp_bind (subst_map γ e1) "[Hg1]" l "[%loc [%v1 (-> & Hpt & Hv1)]]" He1.
   (* ! rewrites 1 or more times BTW, ? for 0 or more *)

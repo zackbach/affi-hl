@@ -43,7 +43,6 @@ Section subst.
         (subst_map (delete x1 (delete x2 (delete x3 vs))) e))).
   Proof.
     intros Hneq12 Hneq23 Hneq13.
-    (* Room for streamlining *)
     rewrite (subst_subst_ne _ x2 x3); auto.
     rewrite (subst_subst_ne _ x1 x3); auto.
     rewrite -subst_map_insert2; auto.
@@ -65,19 +64,53 @@ Section context_lemmas.
   Lemma ctx_lookup_contains (Γ : ctx) x τ : 
     Γ !! x = Some τ → CtxItem x τ ∈ Γ.
   Proof.
-    (* By induction on Γ, using ctx_lookup definition
-        Admitted for now because this is clearly true but annoying *)
-    Admitted.
+    intros Hlook.
+    induction Γ as [|item Γ].
+    - discriminate.
+    - destruct item as [x' τ'].
+      rewrite /lookup /ctx_lookup in Hlook.
+      destruct (decide (x = x')) as [Heq | Hneq].
+      + rewrite decide_True in Hlook; auto.
+        inversion Hlook; subst. left.
+      + right. apply IHΓ. rewrite decide_False in Hlook; auto.
+  Qed.
 
-  Lemma ctx_lookup_notin (Γ : ctx) x τ : 
-    Γ !! x = None ↔ CtxItem x τ ∉ Γ.
+  Lemma ctx_contains_lookup (Γ : ctx) x τ : 
+    CtxItem x τ ∈ Γ → ∃ τ', Γ !! x = Some τ'.
   Proof.
-    Admitted.
+    intros Hin.
+    induction Γ as [|item Γ].
+    - apply not_elem_of_nil in Hin. contradiction.
+    - apply elem_of_cons in Hin. destruct Hin as [Hfirst | Hrest].
+    (* TODO: golf this, there is a ton of repeated logic here *)
+      + exists τ. rewrite /lookup /ctx_lookup.
+        rewrite <- Hfirst. rewrite decide_True; done.
+      + apply IHΓ in Hrest.
+        destruct item as [name τcur].
+        destruct (decide (x = name)).
+        * exists τcur. rewrite /lookup /ctx_lookup.
+          rewrite decide_True; done.
+        * destruct Hrest as [τlater Hfind].
+          exists τlater. rewrite /lookup /ctx_lookup.
+          rewrite decide_False; auto.
+  Qed.
+
+  (* Note that this actually holds as an ↔ as stated,
+     but other direction is not needed for our purposes *)
+  Lemma ctx_lookup_notin' (Γ : ctx) x τ : 
+    Γ !! x = None → CtxItem x τ ∉ Γ.
+  Proof.
+    intros Hnone Hcontra.
+    apply ctx_contains_lookup in Hcontra as [τ' Hsome].
+    congruence.
+  Qed.
 
   Lemma ctx_add_notin (Γ : ctx) x y τ :
     Γ !! y = None → x ≠ y → (CtxItem x τ :: Γ) !! y = None.
   Proof.
-    Admitted.
+    intros Hnone Hneq.
+    rewrite /lookup /ctx_lookup decide_False; auto.
+  Qed.
 
 
   Lemma ctx_interp_split Γ1 Γ2 γ :
@@ -93,7 +126,7 @@ Section context_lemmas.
   Proof.
     iIntros (Hlook) "Hγ".
     apply ctx_lookup_contains in Hlook.
-    iPoseProof (big_sepL_elem_of _ Γ _ with "Hγ") as "HΦ"; done.
+    by iPoseProof (big_sepL_elem_of _ Γ _ with "Hγ") as "HΦ".
   Qed.
 
   Lemma ctx_subst_insert Γ γ v x :
@@ -101,7 +134,17 @@ Section context_lemmas.
     𝒢⟦ Γ ⟧ γ -∗
     𝒢⟦ Γ ⟧ (<[ x := v ]> γ).
   Proof.
-    Admitted.
+    iIntros (Hnone) "Hγ".
+    iApply (big_sepL_mono with "Hγ").
+    iIntros (k item Hlook) "[%val [%Hfind Hval]]".
+    iExists val; iFrame; iPureIntro.
+    apply lookup_insert_Some. right; split; auto.
+    destruct item as [name τ]; simpl in *.
+    apply elem_of_list_lookup_2 in Hlook.
+    assert ({| ctx_item_name := x; ctx_item_type := τ |} ∉ Γ).
+    - apply ctx_lookup_notin; done.
+    - intros Hcontra. subst. contradiction.
+  Qed.
 
   Lemma ctx_interp_insert Γ γ τ v x :
     ⌜Γ !! x = None⌝ -∗
@@ -116,6 +159,6 @@ Section context_lemmas.
     Transparent ctx_interp. iApply big_sepL_cons; simpl.
     iSplitL "Hv".
     - iExists v. rewrite lookup_insert; auto.
-    - iPoseProof (ctx_subst_insert $! Hnone with "Hγ") as "Hγx"; done.
+    - by iPoseProof (ctx_subst_insert $! Hnone with "Hγ") as "Hγx".
   Qed.
 End context_lemmas.
