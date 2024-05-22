@@ -129,6 +129,8 @@ Section context_lemmas.
     by iPoseProof (big_sepL_elem_of _ Γ _ with "Hγ") as "HΦ".
   Qed.
 
+  (* This does get invoked directly sometimes; whenever it is invoked,
+     that is a sign that using the "anomyzation" approach would not suffice *)
   Lemma ctx_subst_insert Γ γ v x :
     ⌜Γ !! x = None⌝ -∗
     𝒢⟦ Γ ⟧ γ -∗
