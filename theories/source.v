@@ -69,13 +69,19 @@ Section compile.
       Γ1 ⊢ a1 : τ1 ~~> e1 →
       Γ2 ⊢ a2 : τ2 ~~> e2 →
         (Γ1 ++ Γ2) ⊢ (Pair a1 a2) : (Tensor τ1 τ2) ~~> (e1, e2)
-    | CSplit Γ1 Γ2 x1 x2 a1 a2 τ1 τ2 τ e1 e2 :
+    (* Maybe the x1 and x2 in Γ2 conditions could be eliminated by
+       doing the anonymization thing, but I think tmp couldn't *)
+    | CSplit Γ1 Γ2 x1 x2 a1 a2 τ1 τ2 τ e1 e2 (tmp : string) :
+      (* There's probably a better way to express this disjointness,
+         but this is just easiest to work with in the proofs... *)
+      Γ2 !! x1 = None → Γ2 !! x2 = None → Γ2 !! tmp = None →
+      tmp ≠ x1 → tmp ≠ x2 → x1 ≠ x2 →
       Γ1 ⊢ a1 : (Tensor τ1 τ2) ~~> e1 →
-      (CtxItem x2 τ2 :: CtxItem x1 τ1 :: Γ2) ⊢ a2 : τ ~~> e2 →
+      (CtxItem x1 τ1 :: CtxItem x2 τ2 :: Γ2) ⊢ a2 : τ ~~> e2 →
         (Γ1 ++ Γ2) ⊢ (Split (BNamed x1) (BNamed x2) a1 a2) : τ ~~>
-          let: "tmp" := e1 in
-          let: x1 := Fst "tmp" in
-          let: x2 := (Snd "tmp") in e2
+          let: tmp := e1 in
+          let: x1 := Fst tmp in
+          let: x2 := Snd tmp in e2
     | CNew Γ a τ e :
       Γ ⊢ a : τ ~~> e →
         Γ ⊢ (New a) : (Unq τ) ~~> ref e
@@ -90,6 +96,3 @@ Section compile.
           let: BAnon := ltemp <- e2 in (ltemp, rtemp)
   where "Γ ⊢ a : τ '~~>' e" := (compile Γ a τ e).
 End compile.
-
-(* TODO:
-    update relation to quantify over fresh names *)

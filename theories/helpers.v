@@ -22,23 +22,42 @@ Tactic Notation "smart_wp_bind"
   simpl; iIntros (v) Hv.
 
 
-Lemma subst_map_insert2 x1 v1 x2 v2 vs e : x1 ≠ x2 ->
-  subst_map (<[x2:=v2]> (<[x1:=v1]>vs)) e = 
-    subst x1 v1 (subst x2 v2 (subst_map (delete x1 (delete x2 vs)) e)).
-Proof.
-  intros Hneq.
-  (* Room for streamlining *)
-  rewrite subst_subst_ne; auto.
-  rewrite -subst_map_insert.
-  rewrite -delete_insert_ne; auto.
-  rewrite -subst_map_insert; auto.
-Qed.
+Section subst.
+  Lemma subst_map_insert2 x1 v1 x2 v2 vs e : x1 ≠ x2 →
+    subst_map (<[x2:=v2]> (<[x1:=v1]>vs)) e = 
+      subst x1 v1 (subst x2 v2 (subst_map (delete x1 (delete x2 vs)) e)).
+  Proof.
+    intros Hneq.
+    (* Room for streamlining *)
+    rewrite subst_subst_ne; auto.
+    rewrite -subst_map_insert.
+    rewrite -delete_insert_ne; auto.
+    rewrite -subst_map_insert; auto.
+  Qed.
 
-Lemma binder_name_neq a b :
-  a ≠ b ↔ (BNamed a) ≠ (BNamed b).
-Proof.
-  split; intros H1 H2; [inversion H2 | subst]; contradiction.
-Qed.
+  (* This is almost hilariously dinky *)
+  Lemma subst_map_insert3 x1 v1 x2 v2 x3 v3 vs e : 
+    x1 ≠ x2 → x2 ≠ x3 → x1 ≠ x3 →
+    subst_map (<[x3:=v3]> (<[x2:=v2]> (<[x1:=v1]>vs))) e = 
+      subst x1 v1 (subst x2 v2 (subst x3 v3 
+        (subst_map (delete x1 (delete x2 (delete x3 vs))) e))).
+  Proof.
+    intros Hneq12 Hneq23 Hneq13.
+    (* Room for streamlining *)
+    rewrite (subst_subst_ne _ x2 x3); auto.
+    rewrite (subst_subst_ne _ x1 x3); auto.
+    rewrite -subst_map_insert2; auto.
+    rewrite -delete_insert_ne; auto.
+    rewrite -delete_insert_ne; auto.
+    rewrite -subst_map_insert; auto.
+  Qed.
+
+  Lemma binder_name_neq a b :
+    a ≠ b ↔ (BNamed a) ≠ (BNamed b).
+  Proof.
+    split; intros H1 H2; [inversion H2 | subst]; contradiction.
+  Qed.
+End subst.
 
 
 (* Mostly inspired from Semantics notes *)
@@ -52,6 +71,11 @@ Section context_lemmas.
 
   Lemma ctx_lookup_notin (Γ : ctx) x τ : 
     Γ !! x = None ↔ CtxItem x τ ∉ Γ.
+  Proof.
+    Admitted.
+
+  Lemma ctx_add_notin (Γ : ctx) x y τ :
+    Γ !! y = None → x ≠ y → (CtxItem x τ :: Γ) !! y = None.
   Proof.
     Admitted.
 
