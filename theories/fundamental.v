@@ -119,11 +119,18 @@ Proof.
   rewrite decide_True; auto.
   rewrite -subst_map_insert2; auto. simpl.
   wp_bind (Store _ _). wp_bind (subst_map _ _).
-  (* RESUME HERE *)
-  iPoseProof (ctx_subst_insert $! Hrt with "Hg2") as "Hγx".
-
-  
-  Admitted.
+    iPoseProof (ctx_subst_insert _ _ v1 $! Hrt with "Hg2") as "Hγr".
+  iPoseProof (ctx_subst_insert _ _ #loc $! Hlt with "Hγr") as "Hγrl".
+  iPoseProof (He2 with "Hγrl") as "He".
+  rewrite /expr_interp.
+  iApply (wp_wand with "He"); iIntros (v2) "Hv2".
+  wp_store. wp_pures.
+  (* Again, this is way more manual than it ought to be... *)
+  rewrite decide_False; auto. simpl. rewrite decide_True; auto.
+  wp_pure; iModIntro. 
+  rewrite /tensor_interp /unq_interp.
+  iExists #loc, v1; iFrame. eauto with iFrame.
+Qed.
 
 Local Hint Resolve compat_unit compat_var compat_lam compat_app
   compat_pair compat_split compat_new compat_swap : core.
@@ -133,4 +140,4 @@ Lemma fundamental Γ a τ e :
   Γ ⊨ e : τ.
 Proof.
   induction 1; eauto.
-  Admitted.
+Qed.

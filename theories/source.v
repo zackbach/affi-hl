@@ -87,7 +87,7 @@ Section compile.
         (Γ1 ++ Γ2) ⊢ (Swap a1 a2) : (Tensor (Unq τ2) τ1) ~~>
           let: ltemp := e1 in
           let: rtemp := !ltemp in
-          let: "_" := ltemp <- e2 in (ltemp, rtemp)
+          let: BAnon := ltemp <- e2 in (ltemp, rtemp)
   where "Γ ⊢ a : τ '~~>' e" := (compile Γ a τ e).
 End compile.
 
