@@ -1,4 +1,4 @@
-From affi Require Import source logrel helpers.
+From affi.realizability Require Import source logrel helpers.
 From iris.heap_lang Require Import notation lang.
 From iris.proofmode Require Import proofmode tactics.
 From iris.heap_lang Require Import primitive_laws metatheory.
@@ -23,7 +23,7 @@ Proof.
   (* [//] creates a goal for the premise (in this case Γ) with no
      spatial hypotheses, then uses // to call done and solve *)
   iPoseProof (ctx_interp_lookup with "[//] Hg") as "[%v [-> Hv]]".
-  iApply wp_value; done. 
+  iApply wp_value; done.
 Qed.
 
 Lemma compat_lam Γ (x : string) e τ1 τ2 :

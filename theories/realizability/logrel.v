@@ -1,4 +1,4 @@
-From affi Require Import source.
+From affi.realizability Require Import source.
 From iris.program_logic Require Import weakestpre.
 From iris.heap_lang Require Import primitive_laws metatheory.
 From iris.heap_lang Require Import lang notation.

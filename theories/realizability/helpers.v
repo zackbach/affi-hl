@@ -1,4 +1,4 @@
-From affi Require Import source logrel.
+From affi.realizability Require Import source logrel.
 From iris.proofmode Require Import proofmode tactics.
 From iris.heap_lang Require Import proofmode.
 From iris.heap_lang Require Import primitive_laws metatheory.
@@ -144,7 +144,7 @@ Section context_lemmas.
     destruct item as [name τ]; simpl in *.
     apply elem_of_list_lookup_2 in Hlook.
     assert ({| ctx_item_name := x; ctx_item_type := τ |} ∉ Γ).
-    - apply ctx_lookup_notin; done.
+    - apply ctx_lookup_notin'; done.
     - intros Hcontra. subst. contradiction.
   Qed.
 

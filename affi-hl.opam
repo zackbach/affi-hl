@@ -5,7 +5,7 @@ authors: "Zack Eisbach"
 
 depends: [
   "coq" { (>= "8.18" & < "8.19~") | (= "dev") }
-  "coq-iris-heap-lang" { (= "dev.2023-10-03.0.70b30af7") | (= "dev") }
+  "coq-iris-heap-lang" { (= "dev.2024-04-19.1.5ae02407") | (= "dev") }
 ]
 
 build: [make "-j%{jobs}%"]

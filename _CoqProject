@@ -5,7 +5,9 @@
 # (https://github.com/coq/coq/issues/6294).
 -arg -w -arg -redundant-canonical-projection
 
-theories/source.v
-theories/logrel.v
-theories/helpers.v
-theories/fundamental.v
+theories/realizability/source.v
+theories/realizability/logrel.v
+theories/realizability/helpers.v
+theories/realizability/fundamental.v
+
+theories/ref_count/foo.v
