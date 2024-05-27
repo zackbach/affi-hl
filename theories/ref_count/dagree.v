@@ -1,8 +1,7 @@
-(* https://gitlab.mpi-sws.org/iris/iris/blob/master/iris/algebra/agree.v *)
 From iris.algebra Require Export cmra.
 From iris.prelude Require Import options.
 
-(* ZACK NOTE: more `Local Arguments ...` would go here *)
+(* ZACK NOTE: more `Local Arguments ...` would go here, prob *)
 
 Record dagree (A : Type) := Agree {
   dagree_head : A;
@@ -11,9 +10,6 @@ Record dagree (A : Type) := Agree {
 Global Arguments Agree {_}.
 Global Arguments dagree_head {_}.
 Global Arguments dagree_tail {_}.
-
-Definition to_agree {A} (a : A) : dagree A :=
-  {| dagree_head := a; dagree_tail := [] |}.
 
 Definition to_list {A} (xxs : dagree A) : list A :=
   dagree_head xxs :: dagree_tail xxs.
@@ -60,6 +56,13 @@ Section dagree.
 
   Global Instance dagree_cmra_discrete : CmraDiscrete dagreeR.
   Proof. apply discrete_cmra_discrete. Qed.
+
+  Definition to_agree (a : A) : dagree A :=
+  {| dagree_head := a; dagree_tail := [] |}.
+
+  Global Instance to_agree_injN : Inj (=) (=) (to_agree).
+  Proof. intros x y Hxy. by inversion Hxy. Qed.
 End dagree.
 
+(* more goes here, for managing implicits easier *)
 Global Arguments dagreeR : clear implicits.
