@@ -3,6 +3,8 @@ From iris.prelude Require Import options.
 
 (* ZACK NOTE: more `Local Arguments ...` would go here, prob *)
 
+(* This is a common non-empty list pattern. For instance, see 
+   https://github.com/coq-community/parseque/blob/master/src/NEList.v *)
 Record dagree (A : Type) := Agree {
   dagree_head : A;
   dagree_tail : list A

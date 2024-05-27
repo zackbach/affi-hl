@@ -22,7 +22,7 @@ Global Arguments Disagree {_}.
 Global Instance: Params (@Agree) 1 := {}.
 Global Instance: Params (@Disagree) 1 := {}.
 
-Global Instance maybe_Excl {A} : Maybe (@Agree A) := λ x,
+Global Instance maybe_Agree {A} : Maybe (@Agree A) := λ x,
   match x with Agree a => Some a | _ => None end.
 
 Section dagree.
