@@ -1,5 +1,5 @@
-(* https://gitlab.mpi-sws.org/iris/iris/blob/master/iris/algebra/agree.v
-   for reference, step through easily *)
+(* FOR REFERENCE ONLY: literally copied, to step through easily
+   https://gitlab.mpi-sws.org/iris/iris/blob/master/iris/algebra/agree.v *)
 From iris.algebra Require Export cmra.
 From iris.prelude Require Import options.
 

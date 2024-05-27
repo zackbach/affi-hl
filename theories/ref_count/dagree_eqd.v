@@ -1,3 +1,5 @@
+(* FAILED ATTEMPT: see `dagree.v` for proper implementation,
+   and resource.v for commentary *)
 From iris.algebra Require Export cmra.
 From iris.prelude Require Import options.
 
@@ -7,8 +9,6 @@ From iris.prelude Require Import options.
 (* structure inspired by
   https://gitlab.mpi-sws.org/iris/iris/blob/master/iris/algebra/excl.v 
 *)
-
-(* ZACK NOTE: `Local Arguments ...` go here *)
 
 Inductive dagree (A : Type) :=
   | Agree : A → dagree A
@@ -24,7 +24,6 @@ Global Instance: Params (@Disagree) 1 := {}.
 
 Global Instance maybe_Excl {A} : Maybe (@Agree A) := λ x,
   match x with Agree a => Some a | _ => None end.
-
 
 Section dagree.
   Context {A : Type}.

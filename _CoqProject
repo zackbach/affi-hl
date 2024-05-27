@@ -11,4 +11,4 @@ theories/realizability/helpers.v
 theories/realizability/fundamental.v
 
 theories/ref_count/dagree.v
-theories/ref_count/foo.v
+theories/ref_count/resource.v
