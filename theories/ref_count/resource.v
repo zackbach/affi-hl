@@ -39,7 +39,13 @@ Inductive resR :=
 
 (* Now, the notion of validity here is lacking, so we need to define
    our own. Luckily, we can easily augment resR with a new notion
-   using iso_cmra_mixin_restrict_validity *)
+   using iso_cmra_mixin_restrict_validity
+   Although it may be easier to define directly and just look at
+   how iso_cmra_mixin_restrict_validity works for proof assistance
+   since their lemma has extra overhead than discrete RAs need *)
+
+(* Note that defining this way does make it a bit harder to formulate
+   other definitions, like erasure, reachability, etc *)
 
 (* ANOTHER OPTION (probably easiest...): just define everything
    directly over the inductive carrier, optionally picking 

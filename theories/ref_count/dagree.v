@@ -64,6 +64,9 @@ Section dagree.
 
   Global Instance to_agree_injN : Inj (=) (=) (to_agree).
   Proof. intros x y Hxy. by inversion Hxy. Qed.
+
+  (* TODO: figure out how extraction would work. in `agree.v`,
+     they use some uninj thing where we get some existentially? *)
 End dagree.
 
 (* more goes here, for managing implicits easier *)
