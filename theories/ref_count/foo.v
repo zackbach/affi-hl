@@ -5,22 +5,34 @@ From iris.heap_lang Require Import proofmode.
 From iris.heap_lang Require Import notation lang.
 From iris.algebra Require Import numbers csum excl gmap.
 From iris.prelude Require Import options.
+From affi.ref_count Require Import dagree_eqd.
 
-Definition cellR (A : ofe) : cmra := 
-  csumR (exclR (leibnizO val)) (prodR positiveR (agreeR A)).
+(* FAIL: cellR needs resR to be EqDecision to define,
+   but it can't be EqDecision until it is actually defined... *)
 
-(* Inductive resR := 
-| Res : gmapR loc (cellR (leibnizO resR)) -> resR. *)
+Definition cellR (A : Type) `{EqDecision A} : cmra := 
+  csumR (exclR (leibnizO val)) (prodR positiveR (dagreeR A)).
 
-Definition assoc_map A B := list (A * B).
+(* FAILS:
+  Inductive resR := 
+  | Res : gmapR loc (cellR resR) -> resR.
+*)
 
-Inductive bar := 
-| Bar : gmapR nat (exclR (leibnizO bar)) -> bar.
+(* Therefore, we need to try something that doesn't use EqDecision *)
 
-(* Inductive baz := 
-| Baz : gmapR nat (agreeR (leibnizO baz)) -> baz. *)
+(* IDEA: try to use the gset version from Semantics notes
+   - FAILS: they also need EqDecision for non-empty check
+   IDEA: try to use standard list version
+   - FAILS: due to positivity 
+   IDEA: use standard list version, but _without_ non-empty restriction? 
+   - FAILS: literally not a resource algebra: ✓ (emp ⋅ good) but NOT ✓ emp 
+   IDEA: use a jank list version for non-empty... 
+*)
 
-(* Print agree. *)
+(* FAILS:
+  Inductive baz := 
+  | Baz : gmap nat (agree (leibnizO baz)) -> baz.
+*)
 
 
 Inductive res :=
