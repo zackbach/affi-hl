@@ -40,7 +40,29 @@ Proof. destruct x as [head tail]; exists head; apply elem_head. Qed.
 Lemma elem_of_agree_list {A} a l (nel : agree A) :
   l = to_list nel → a ∈ nel ↔ a ∈ l.
 Proof.
+  intro Heq. split; intros H.
+  - induction H; rewrite /to_list /= in Heq; rewrite Heq; by constructor.
+  - rewrite /to_list in Heq.
+    destruct nel as [head tail]; simpl in *.
+    rewrite Heq in H; apply elem_of_cons in H; destruct H as [Hhead | Htail].
+    (* kinda ugly proof but whatever *)
+    + rewrite Hhead; apply elem_head.
+    + by apply elem_list.
+Qed.
+
+(* TODO: rewrite some other stuff based on these easier definitions
+   Specifically, elem_of_agree_comp is pretty bad *)
+
+Lemma elem_of_agree_split {A} x (y : A) (l : list A) :
+  x ∈ Agree y l ↔ x = y ∨ x ∈ l.
+Proof.
+  split; intros H.
+  (* Annoying but it'll work, then rework other proof based on it *)
   Admitted.
+
+Lemma elem_of_agree_head {A} (x : agree A) :
+  agree_head x ∈ x.
+Proof. destruct x; simpl. constructor. Qed.
 
 Lemma elem_of_agree_singleton {A} (a b : A) : 
   a ∈ Agree b [] ↔ a = b.
@@ -91,13 +113,30 @@ Local Instance agree_validN_instance : ValidN (agree A) := λ n x,
 Local Instance agree_valid_instance : Valid (agree A) := λ x, ∀ n, ✓{n} x.
 
 Local Program Instance agree_op_instance : Op (agree A) := λ x y,
-  {| agree_tail := agree_tail x ++ y |}.
-Next Obligation. by intros [? ?] ?. Qed.
+  {| agree_head := agree_head x; agree_tail := agree_tail x ++ y |}.
 Local Instance agree_pcore_instance : PCore (agree A) := Some.
 
+(* sucks but whatever *)
 Lemma elem_of_agree_comp a x y : a ∈ x ⋅ y ↔ a ∈ x ∨ a ∈ y.
 Proof.
-  Admitted.
+  split; intros H.
+  - rewrite /op /agree_op_instance /= in H.
+    (* hack, much streamlining is desired here *)
+    rewrite elem_of_agree_list in H. 2: rewrite /to_list /=; done.
+    rewrite elem_of_cons in H; destruct H as [Hhead | Happ].
+    + left. destruct x; simpl in *. rewrite Hhead; apply elem_head.
+    + rewrite elem_of_app in Happ; destruct Happ as [Hx | Hy].
+      * left. destruct x; simpl in *. by apply elem_list.
+      * rewrite elem_of_cons in Hy.
+        destruct Hy as [Hhead | Htail]; right; destruct y; simpl in *.
+        -- rewrite Hhead; apply elem_head.
+        -- by apply elem_list.
+  - destruct H as [Hx | Hy].
+    + destruct Hx; rewrite /op /agree_op_instance /=; constructor.
+      apply elem_of_app; auto.
+    + constructor. apply elem_of_app. right.
+      rewrite -elem_of_agree_list; eauto.
+Qed.
 
 Lemma agree_validN_def n x :
   ✓{n} x ↔ ∀ a b, a ∈ x → b ∈ x → a ≡{n}≡ b.
@@ -293,6 +332,14 @@ Proof. done. Qed.
 Lemma elem_of_agree_map {A B} (f : A → B) (l : agree A) (x : B) :
   x ∈ agree_map f l ↔ ∃ y, x = f y ∧ y ∈ l.
 Proof.
+  split; intros H.
+  - rewrite /agree_map elem_of_agree_split in H.
+    destruct H as [Hhead | Htail].
+    + exists (agree_head l). split; [done | apply elem_of_agree_head].
+    (* + rewrite -elem_of_fmap. 
+       TYPE CLASS INFERENCE FAILS ...*)
+    + admit.
+  - 
   Admitted.
 
 Section agree_map.
