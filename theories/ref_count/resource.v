@@ -35,8 +35,22 @@ Definition cellR (A : ofe) : cmra :=
   csumR (exclR (leibnizO val)) (prodR positiveR (agreeR A)).
 
 Inductive resR := ResR {
-   res_car : gmapR loc (cellR (leibnizO resR))
+   res_car :> gmapR loc (cellR (leibnizO resR))
 }.
+
+
+
+Local Instance resR_dist : Dist resR := λ n x y,
+   res_car x ≡{n}≡ res_car y.
+
+Local Instance resR_equiv : Equiv resR := λ x y, res_car x ≡ res_car y.
+
+Definition agree_ofe_mixin : OfeMixin resR.
+Proof.
+  split.
+  - 
+
+Print Cmra'.
 
 (* TODO: currently this cannot actually be used as a cmra, since it is
    a Type instead. There ought to be some way to define a coercion

@@ -40,14 +40,10 @@ Proof. destruct x as [head tail]; exists head; apply elem_head. Qed.
 Lemma elem_of_agree_list {A} a l (nel : agree A) :
   l = to_list nel → a ∈ nel ↔ a ∈ l.
 Proof.
-  intro Heq. split; intros H.
-  - induction H; rewrite /to_list /= in Heq; rewrite Heq; by constructor.
-  - rewrite /to_list in Heq.
-    destruct nel as [head tail]; simpl in *.
-    rewrite Heq in H; apply elem_of_cons in H; destruct H as [Hhead | Htail].
-    (* kinda ugly proof but whatever *)
-    + rewrite Hhead; apply elem_head.
-    + by apply elem_list.
+  intro Heq. split=> H.
+  - induction H; rewrite /to_list /= in Heq; subst; by constructor.
+  - rewrite /to_list in Heq. destruct nel as [head tail]; simpl in *.
+    rewrite Heq in H; apply elem_of_cons in H; destruct H; subst; by constructor.
 Qed.
 
 (* TODO: rewrite some other stuff based on these easier definitions
@@ -56,13 +52,10 @@ Qed.
 Lemma elem_of_agree_split {A} x (y : A) (l : list A) :
   x ∈ Agree y l ↔ x = y ∨ x ∈ l.
 Proof.
-  split; intros H.
-  (* Annoying but it'll work, then rework other proof based on it *)
-  Admitted.
-
-Lemma elem_of_agree_head {A} (x : agree A) :
-  agree_head x ∈ x.
-Proof. destruct x; simpl. constructor. Qed.
+  rewrite elem_of_agree_list.
+  2: rewrite /to_list /= //.
+  apply elem_of_cons.
+Qed.
 
 Lemma elem_of_agree_singleton {A} (a b : A) : 
   a ∈ Agree b [] ↔ a = b.
@@ -116,26 +109,21 @@ Local Program Instance agree_op_instance : Op (agree A) := λ x y,
   {| agree_head := agree_head x; agree_tail := agree_tail x ++ y |}.
 Local Instance agree_pcore_instance : PCore (agree A) := Some.
 
-(* sucks but whatever *)
 Lemma elem_of_agree_comp a x y : a ∈ x ⋅ y ↔ a ∈ x ∨ a ∈ y.
 Proof.
-  split; intros H.
-  - rewrite /op /agree_op_instance /= in H.
-    (* hack, much streamlining is desired here *)
-    rewrite elem_of_agree_list in H. 2: rewrite /to_list /=; done.
+  split=> [H|[Hx|Hy]].
+  - rewrite /op /agree_op_instance /= elem_of_agree_list in H.
+    (* rewriting hack, streamlining is desired here *)
+    2: rewrite /to_list /= //.
     rewrite elem_of_cons in H; destruct H as [Hhead | Happ].
-    + left. destruct x; simpl in *. rewrite Hhead; apply elem_head.
-    + rewrite elem_of_app in Happ; destruct Happ as [Hx | Hy].
-      * left. destruct x; simpl in *. by apply elem_list.
-      * rewrite elem_of_cons in Hy.
-        destruct Hy as [Hhead | Htail]; right; destruct y; simpl in *.
-        -- rewrite Hhead; apply elem_head.
-        -- by apply elem_list.
-  - destruct H as [Hx | Hy].
-    + destruct Hx; rewrite /op /agree_op_instance /=; constructor.
-      apply elem_of_app; auto.
-    + constructor. apply elem_of_app. right.
-      rewrite -elem_of_agree_list; eauto.
+    2: rewrite elem_of_app in Happ; destruct Happ as [Hx | Hy].
+    1-2: left; destruct x; simpl in *; subst; by constructor.
+    rewrite elem_of_cons in Hy. destruct Hy as [Hhead | Htail]; 
+      right; destruct y; simpl in *; subst; by constructor.
+  - destruct Hx; rewrite /op /agree_op_instance /=; constructor.
+    apply elem_of_app; auto.
+  - constructor. apply elem_of_app. right.
+    rewrite -elem_of_agree_list; eauto.
 Qed.
 
 Lemma agree_validN_def n x :
@@ -329,56 +317,64 @@ Lemma agree_map_to_agree {A B} (f : A → B) (x : A) :
   agree_map f (to_agree x) = to_agree (f x).
 Proof. done. Qed.
 
+Lemma agree_map_list {A B} (f : A → B) x l :
+  x ∈ agree_map f l ↔ x ∈ f <$> agree_head l :: agree_tail l.
+Proof.
+  apply elem_of_agree_list.
+  rewrite /agree_map /to_list /= //.
+Qed.
+
 Lemma elem_of_agree_map {A B} (f : A → B) (l : agree A) (x : B) :
   x ∈ agree_map f l ↔ ∃ y, x = f y ∧ y ∈ l.
 Proof.
-  split; intros H.
-  - rewrite /agree_map elem_of_agree_split in H.
-    destruct H as [Hhead | Htail].
-    + exists (agree_head l). split; [done | apply elem_of_agree_head].
-    (* + rewrite -elem_of_fmap. 
-       TYPE CLASS INFERENCE FAILS ...*)
-    + admit.
-  - 
-  Admitted.
+  rewrite agree_map_list. setoid_rewrite elem_of_agree_list at 1.
+  (* There has to be a better way to do this rewriting lol *)
+  2: rewrite /to_list /= //.
+  apply elem_of_list_fmap.
+Qed.
 
 Section agree_map.
-  Context {A B : ofe} (f : A → B) {Hf: NonExpansive f}.
+Context {A B : ofe} (f : A → B) {Hf: NonExpansive f}.
 
-  Local Instance agree_map_ne : NonExpansive (agree_map f).
-  Proof using Type*.
-    intros n x y [H H']; split=> b /=; setoid_rewrite elem_of_agree_map.
-    - intros (a&->&?). destruct (H a) as (a'&?&?); auto. naive_solver.
-    - intros (a&->&?). destruct (H' a) as (a'&?&?); auto. naive_solver.
-  Qed.
-  Local Instance agree_map_proper : Proper ((≡) ==> (≡)) (agree_map f) := ne_proper _.
+Local Instance agree_map_ne : NonExpansive (agree_map f).
+Proof using Type*.
+  intros n x y [H H']; split=> b /=; setoid_rewrite elem_of_agree_map.
+  - intros (a&->&?). destruct (H a) as (a'&?&?); auto. naive_solver.
+  - intros (a&->&?). destruct (H' a) as (a'&?&?); auto. naive_solver.
+Qed.
+Local Instance agree_map_proper : Proper ((≡) ==> (≡)) (agree_map f) := ne_proper _.
 
-  Lemma agree_map_ext (g : A → B) x :
-    (∀ a, f a ≡ g a) → agree_map f x ≡ agree_map g x.
-  Proof using Hf.
-    intros Hfg n; split=> b /=; setoid_rewrite elem_of_agree_map.
-    - intros (a&->&?). exists (g a). rewrite Hfg; eauto.
-    - intros (a&->&?). exists (f a). rewrite -Hfg; eauto.
-  Qed.
+Lemma agree_map_ext (g : A → B) x :
+  (∀ a, f a ≡ g a) → agree_map f x ≡ agree_map g x.
+Proof using Hf.
+  intros Hfg n; split=> b /=; setoid_rewrite elem_of_agree_map.
+  - intros (a&->&?). exists (g a). rewrite Hfg; eauto.
+  - intros (a&->&?). exists (f a). rewrite -Hfg; eauto.
+Qed.
 
-  Lemma agree_map_comp (l1 l2 : agree A) :
-    agree_map f (l1 ⋅ l2) = (agree_map f l1) ⋅ (agree_map f l2).
-  Proof.
-    Admitted.
+(* TODO: prob move these up *)
+Lemma comp_head (l1 l2 : agree A) :
+  agree_head (l1 ⋅ l2) = agree_head l1.
+Proof.
+  Admitted.
 
-  Global Instance agree_map_morphism : CmraMorphism (agree_map f).
-  Proof using Hf.
-    split; first apply _.
-    - intros n x. rewrite !agree_validN_def=> Hv b b' /=.
-      intros (a&->&?)%elem_of_agree_map (a'&->&?)%elem_of_agree_map.
-      apply Hf; eauto.
-    - done.
-    - intros x y n; split=> b;
-        (* Random note as I'm stepping through: my definitions are
-           way uglier than theirs when it comes to explicit type
-           parameters and notation / expanison stuff *)
-        rewrite !agree_map_comp; setoid_rewrite elem_of_agree_comp; eauto.
-  Qed.
+Lemma agree_map_comp (l1 l2 : agree A) :
+  agree_map f (l1 ⋅ l2) = (agree_map f l1) ⋅ (agree_map f l2).
+Proof.
+  by rewrite /agree_map comp_head /op /cmra_op /= 
+  /agree_op_instance /= /to_list /= fmap_app fmap_cons.
+Qed.
+
+Global Instance agree_map_morphism : CmraMorphism (agree_map f).
+Proof using Hf.
+  split; first apply _.
+  - intros n x. rewrite !agree_validN_def=> Hv b b' /=.
+    intros (a&->&?)%elem_of_agree_map (a'&->&?)%elem_of_agree_map.
+    apply Hf; eauto.
+  - done.
+  - intros x y n; split=> b;
+      rewrite !agree_map_comp; setoid_rewrite elem_of_agree_comp; eauto.
+Qed.
 End agree_map.
 
 Definition agreeO_map {A B} (f : A -n> B) : agreeO A -n> agreeO B :=
