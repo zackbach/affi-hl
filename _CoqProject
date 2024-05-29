@@ -10,5 +10,5 @@ theories/realizability/logrel.v
 theories/realizability/helpers.v
 theories/realizability/fundamental.v
 
-theories/ref_count/agree.v
-theories/ref_count/resource.v
+theories/resources/agree.v
+theories/resources/rc.v

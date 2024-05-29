@@ -1,8 +1,9 @@
 `theories/realizability` : Toy realizability model prototype,
 formalized with Iris: Affine lambda calculus ~~> HeapLang
 
-`theories/ref_count` : Resource algebra for reference counting,
-plus small language instantiation and proof-of-concept `wp`s.
+`theories/resources` : Resource algebra for reference counting,
+defined inductively as a proof of concept. Contains re-definition
+of the agreement resource algebra, with a different non-empty list.
 
 To install dependencies using `opam`:
 ```

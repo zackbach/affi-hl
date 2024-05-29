@@ -4,7 +4,7 @@ From iris.heap_lang Require Import proofmode.
 From iris.heap_lang Require Import notation lang.
 From iris.algebra Require Import numbers csum excl gmap.
 From iris.prelude Require Import options.
-From affi.ref_count Require Import agree.
+From affi.resources Require Import agree.
 
 (* GOAL: define a resource algebra over an inductively defined
    carrier in an ergonomic way, using Iris built-ins when possible. *)
@@ -54,7 +54,9 @@ Inductive res := Res {
    it as such. I tried to define some like coercion stuff, which didn't
    work properly.
    
-   ATTEMPT: lift from `res_car` to `res` itself pointwise *)
+   ATTEMPT: lift from `res_car` to `res` itself pointwise. This feels
+   very silly (due to wrapping and unwrapping stuff), but I couldn't
+   figure out how to get the conversion working otherwise *)
 
 Local Instance res_dist : Dist res := λ n x y,
   res_car x ≡{n}≡ res_car y.
