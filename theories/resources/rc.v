@@ -114,6 +114,17 @@ Definition resΣ : gFunctors := #[GFunctor resR].
 Instance subG_resΣ {Σ} : subG resΣ Σ → resG Σ.
 Proof. solve_inG. Qed.
 
+(* We can now use resR just like any other RA. 
+   NOTE: to use authR resR, we need to make resR a unital camera,
+   which should be able to be done with more silly pointwise lifting,
+   since gmapR gives a unital camera
+   
+   ANOTHER NOTE: maybe we would want to use gen_heap stuff to obtain
+   a points-to predicate? Or maybe we can just sorta roll it manually
+   using `authR resR`. I don't think this should be a problem... 
+   - I also don't really know how to use gen_heapGS: think about the
+     difference in "levels" between RAs / cmras and gFunctors *)
+
 (* ANOTHER OPTION (probably easiest...): just define everything
    directly over the inductive carrier, optionally picking 
    definitions up from pre-existing combinators 
@@ -126,3 +137,10 @@ with cell :=
 
 Note that this would be very annoying for the borrowing resource,
 since it is higher-order (and relies on iProp) *)
+
+(* This is where we would do the same thing as a functor now,
+   to be able to use higher-order ghost state.
+   
+   TODO: try this out! No iso_functor_mixin or similar, so things
+   would have to be done more manually. Do this in a new file with
+   a new resource, once I'm sure what I have is a decent approach *)

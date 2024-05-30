@@ -355,8 +355,7 @@ Qed.
 (* TODO: prob move these up *)
 Lemma comp_head (l1 l2 : agree A) :
   agree_head (l1 ⋅ l2) = agree_head l1.
-Proof.
-  Admitted.
+Proof. by rewrite /op /cmra_op /=. Qed.
 
 Lemma agree_map_comp (l1 l2 : agree A) :
   agree_map f (l1 ⋅ l2) = (agree_map f l1) ⋅ (agree_map f l2).
