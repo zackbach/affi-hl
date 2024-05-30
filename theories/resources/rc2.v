@@ -13,10 +13,16 @@ From affi.resources Require Import agree.
    EDIT: I am less and less sure about this one...
    Maybe we can make it take in a COFE and later fill it with either
    a hole or (iProp Σ) ??? See cellR' and res' below *)
-(* Variable Σ : gFunctors. *)
 
-(* Definition cellR (A: ofe) : cmra := 
-  csumR (agreeR A) (agreeR (laterO (iPropO Σ))). *)
+(* OLD VERSIONS WITH Σ:
+Variable Σ : gFunctors.
+
+Definition cellR (A: ofe) : cmra := 
+  csumR (agreeR A) (agreeR (laterO (iPropO Σ))).
+
+Inductive res := Res {
+  res_car :> gmapR loc (cellR (leibnizO res))
+}. *)
 
 Definition cellR' (A B : ofe) `{!Cofe B} : cmra := 
   csumR (agreeR A) (agreeR (laterO B)).
@@ -31,17 +37,13 @@ Definition cellR' (A B : ofe) `{!Cofe B} : cmra :=
    I think that's the problem that we run into with the functor stuff: we
    can't turn an arbitrary Type into the functor we need *)
 
-(* Inductive res := Res {
-  res_car :> gmapR loc (cellR (leibnizO res))
-}. *)
-
 Inductive res_pre (B : ofe) `{!Cofe B} := ResPre {
   res_pre_car :> gmapR loc (cellR' (leibnizO (res_pre B)) B)
 }.
 Global Arguments ResPre {_} {_}.
 Global Arguments res_pre_car {_} {_}.
 
-(*
+(* NOTES FOR OLD VERSION... keeping because it demonstrates how things twist
 
 res := gmapR loc (csumR (agreeR (leibnizO res)) (agreeR (laterO (iPropO Σ))))
 F (X, X⁻) := gmapUR loc (csumR (agreeR resR) (agreeR (laterO X)))
