@@ -149,3 +149,10 @@ Program Definition resOF : oFunctor := {|
   oFunctor_car A _ B _ := resO B;
   oFunctor_map A1 _ A2 _ B1 _ B2 _ fg := ...
 |}. *)
+
+(* MORAL OF THE STORY:
+- defining with combinators is (I think) actually broken without leibnizO
+- You could probably define a RA by hand, and do functor stuff by hand too
+- It might be really annoying (lots of fixed points and stuff) but probably
+  possible... it might not be worth it (LOL)
+- Talk to Ryan about this, and see notes in Obsidian *)
